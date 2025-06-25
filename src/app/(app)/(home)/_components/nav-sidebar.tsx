@@ -16,7 +16,7 @@ interface Props {
 const NavSideBar = ({
     items, open, onOpenChange
 }: Props) => {
-    console.log(open)
+    
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent side="left" className="p-0 transition-none">
