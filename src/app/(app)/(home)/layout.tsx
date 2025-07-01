@@ -1,48 +1,29 @@
-import configPromise from '@payload-config';
-import { getPayload } from "payload";
+
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { getQueryClient, trpc } from '@/trpc/server';
 import Footer from "./_components/footer";
 import { Navbar } from "./_components/navbar";
-import SearchFilters from "./search-filters";
-import { Category } from '@/payload-types';
-import { CustomCategory } from './type';
+import { SearchFilters, SearchFiltersLoading } from "./search-filters";
+import { Suspense } from 'react';
 
 interface Props {
     children?: React.ReactNode;
 }
 
 const Layout = async ({ children }: Props) => {
+    const queryclient = getQueryClient();
 
-    const payload = await getPayload({
-        config: configPromise,
-    })
-
-    const data = await payload.find({
-        collection: 'categories',
-        depth: 1,
-        pagination: false,
-        where: {
-            parent: {
-                exists: false, // Only fetch top-level categories
-            }
-        },
-        sort: 'name',
-    });
-
-    const mapCategoryToCustomCategory = (category: Category): CustomCategory => ({
-        ...category,
-        subcategories: Array.isArray(category?.subcategories?.docs)
-            ? (category.subcategories.docs as Category[])
-                .filter((subcat): subcat is Category => typeof subcat === 'object' && subcat !== null)
-                .map(mapCategoryToCustomCategory)
-            : [],
-    });
-
-    const formattedData: CustomCategory[] = (data.docs as Category[]).map(mapCategoryToCustomCategory);
+    void queryclient.prefetchQuery(trpc.categories.getMany.queryOptions())
 
     return (
         <div className="flex flex-col min-h-screen">
             <Navbar />
-            <SearchFilters data={formattedData} />
+            <HydrationBoundary state={dehydrate(queryclient)}>
+                <Suspense fallback={<SearchFiltersLoading />}>
+                    {/* Search filters component */}
+                    <SearchFilters />
+                </Suspense>
+            </HydrationBoundary>
             <div className="flex-1 bg-[#f4f4f0]">
                 {/* Main content area */}
                 {children}

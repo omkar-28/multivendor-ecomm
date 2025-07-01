@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CategoryDropdown } from "./category-dropdown";
-import { CustomCategory } from "../type";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ListFilterIcon } from "lucide-react";
 import { CategoriesSideBar } from "./categories-sidebar";
+import { CustomCategoriesManyOutput } from "@/modules/categories/types";
 
 interface CategoriesProps {
-    data: CustomCategory[]; // Adjust the type as per your data structure
+    data: CustomCategoriesManyOutput; // Adjust the type as per your data structure
 }
 
 export const Categories = ({ data }: CategoriesProps) => {
@@ -59,13 +59,13 @@ export const Categories = ({ data }: CategoriesProps) => {
 
     return (
         <div className="relative w-full">
-            <CategoriesSideBar open={isSidebarOpen} onOpenChange={setIsSidebarOpen} data={data} />
+            <CategoriesSideBar open={isSidebarOpen} onOpenChange={setIsSidebarOpen} />
             {/* Hidden div to measure all the items */}
             <div
                 ref={measureRef} className="absolute opacity-0 pointer-events-none flex"
                 style={{ position: 'fixed', top: -99999, left: -9999 }}
             >
-                {data.map((category: CustomCategory) => {
+                {data.map((category) => {
                     return <div key={category.id}>
                         <CategoryDropdown
                             category={category}
@@ -82,7 +82,7 @@ export const Categories = ({ data }: CategoriesProps) => {
                 onMouseEnter={() => setIsAnyHovered(true)}
                 onMouseLeave={() => setIsAnyHovered(false)}
             >
-                {data.slice(0, visibleCount).map((category: CustomCategory) => {
+                {data.slice(0, visibleCount).map((category) => {
                     return <div key={category.id}>
                         <CategoryDropdown
                             category={category}
