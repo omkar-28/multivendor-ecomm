@@ -4,11 +4,11 @@ import { useDropdownPosition } from "@/hooks/use-dropdown-position";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
 import { SubCategoryMenu } from "./sub-category-menu";
-import { CustomCategory } from "../type";
 import Link from "next/link";
+import { CustomCategoriesManyOutput } from "@/modules/categories/types";
 
 interface CategoryDropdownProps {
-    category: CustomCategory;
+    category: CustomCategoriesManyOutput[1];
     isActive: boolean;
     isNavigationHovered: boolean;
 }
