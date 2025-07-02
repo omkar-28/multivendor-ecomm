@@ -16,7 +16,7 @@ export const SearchInput = ({
 
     return (
         <div className="flex items-center gap-2 w-full">
-            <CategoriesSideBar open={isSidebarOpen} onOpenChange={setIsSidebarOpen} />
+            <CategoriesSideBar open={isSidebarOpen} onOpenChangeAction={setIsSidebarOpen} />
             <div className="relative w-full">
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-400" />
                 <Input className="h-12 pl-8 border-black" placeholder="Search Products" disabled={disabled} />

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -11,9 +11,9 @@ import { CustomCategoriesManyOutput } from "@/modules/categories/types";
 
 interface CategoriesSideBarProps {
     open: boolean;
-    onOpenChange: (open: boolean) => void
+    onOpenChangeAction: (open: boolean) => void
 }
-export const CategoriesSideBar = ({ open, onOpenChange }: CategoriesSideBarProps) => {
+export const CategoriesSideBar = ({ open, onOpenChangeAction }: CategoriesSideBarProps) => {
     const trpc = useTRPC();
     const { data } = useQuery(trpc.categories.getMany.queryOptions());
 
@@ -27,7 +27,7 @@ export const CategoriesSideBar = ({ open, onOpenChange }: CategoriesSideBarProps
     const handleOpenChange = (open: boolean) => {
         setSelectedCategory(null);
         setParentCategories(null)
-        onOpenChange(open)
+        onOpenChangeAction(open)
     }
 
     function handleClickCategory(category: CustomCategoriesManyOutput[1]) {
