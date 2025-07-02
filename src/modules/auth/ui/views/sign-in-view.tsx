@@ -17,7 +17,7 @@ import Link from "next/link";
 import { Poppins } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +32,8 @@ export const SignInView = () => {
     const router = useRouter();
 
     const trpc = useTRPC();
+    const queryClient = useQueryClient();
+
     const login = useMutation(trpc.auth.login.mutationOptions({
         onError: (error) => {
             console.error("Error during registration:", error);
@@ -39,10 +41,12 @@ export const SignInView = () => {
             toast.error(error.message || "Registration failed. Please try again.");
 
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Registration successful! Redirecting to sign-in page...");
             // Optionally redirect or perform other actions on success
-            router.push('');
+            await queryClient.invalidateQueries(trpc.auth.session.queryFilter());
+            toast.dismiss();
+            router.push('/');
         },
     }));
 

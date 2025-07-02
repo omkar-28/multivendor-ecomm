@@ -22,6 +22,7 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, Categories],
+  cookiePrefix: process.env.PAYLOAD_COOKIE_PREFIX || 'payload',
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

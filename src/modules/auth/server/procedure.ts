@@ -1,10 +1,10 @@
 import { baseProcedure, createTRPCRouter } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { headers as getHeaders, cookies as nextCookies } from "next/headers";
+import { headers as getHeaders } from "next/headers";
 // Make sure this file does NOT import anything from 'react' or use React context/hooks.
 
-import { AUTH_COOKIE } from "../constants";
 import { loginSchema, registerSchema } from './../schemas';
+import { generateAuthCookie } from "../utils";
 
 export const authRouter = createTRPCRouter({
     session: baseProcedure.query(async ({ ctx }) => {
@@ -16,10 +16,6 @@ export const authRouter = createTRPCRouter({
             throw new Error("No session found");
         }
         return session
-    }),
-    logout: baseProcedure.mutation(async () => {
-        const cookies = await nextCookies();
-        cookies.delete("AUTH_COOKIE")
     }),
     register: baseProcedure.input(
         registerSchema
@@ -65,20 +61,14 @@ export const authRouter = createTRPCRouter({
             });
         }
 
-        const cookies = await nextCookies();
         if (!data.token) {
             throw new TRPCError({
                 code: "INTERNAL_SERVER_ERROR",
                 message: "No token returned from login",
             });
         }
-        cookies.set({
-            name: AUTH_COOKIE,
-            value: data.token,
-            httpOnly: true,
-            path: "/",
-            // sameSite: 'none',
-        });
+
+        await generateAuthCookie({ prefix: ctx.payload.config.cookiePrefix, value: data.token });
     }),
     login: baseProcedure.input(loginSchema)
         .mutation(async ({ input, ctx }) => {
@@ -97,20 +87,14 @@ export const authRouter = createTRPCRouter({
                 });
             }
 
-            const cookies = await nextCookies();
             if (!data.token) {
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
                     message: "No token returned from login",
                 });
             }
-            cookies.set({
-                name: AUTH_COOKIE,
-                value: data.token,
-                httpOnly: true,
-                path: "/",
-                // sameSite: 'none',
-            });
+
+            await generateAuthCookie({ prefix: ctx.payload.config.cookiePrefix, value: data.token });
 
             return data;
         }),
