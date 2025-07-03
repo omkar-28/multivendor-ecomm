@@ -2,7 +2,7 @@ import { baseProcedure, createTRPCRouter } from "@/trpc/init";
 import { Category } from "@/payload-types";
 
 
-type CustomCategory = Omit<Category, 'subcategories'> & {
+export type CustomCategory = Omit<Category, 'subcategories'> & {
     subcategories: CustomCategory[];
 };
 
