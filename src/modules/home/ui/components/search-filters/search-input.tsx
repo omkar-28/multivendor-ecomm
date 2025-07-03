@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { BookmarkCheckIcon, ListFilterIcon, SearchIcon } from "lucide-react";
-import { CategoriesSideBar } from "../search-filters/categories-sidebar";
+import { CategoriesSideBar } from "./categories-sidebar";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useTRPC } from "@/trpc/client";
@@ -24,7 +24,7 @@ export const SearchInput = ({
             <CategoriesSideBar open={isSidebarOpen} onOpenChangeAction={setIsSidebarOpen} />
             <div className="relative w-full">
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-400" />
-                <Input className="h-11 pl-8 border-black" placeholder="Search Products" disabled={disabled} />
+                <Input className="h-11 pl-8 border-black bg-white" placeholder="Search Products" disabled={disabled} />
             </div>
             {/* TODO: Add categories view all button */}
             <Button variant='elevated' className="size-12 shrink-0 flex lg:hidden" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
