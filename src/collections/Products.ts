@@ -41,6 +41,11 @@ export const Products: CollectionConfig = {
             relationTo: 'media',
         },
         {
+            name: "coverImage",
+            type: "upload",
+            relationTo: 'media',
+        },
+        {
             name: "refundPolicy",
             type: "select",
             options: ["30-days", "14-days", "7-days", "3-days", "1-day", "no-refund"],
