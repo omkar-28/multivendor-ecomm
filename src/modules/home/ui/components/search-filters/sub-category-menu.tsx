@@ -5,12 +5,8 @@ import { CustomCategoriesManyOutput } from "@/modules/categories/types";
 interface SubCategoryMenuProps {
     category: CustomCategoriesManyOutput[1];
     isOpen: boolean;
-    position: {
-        top: number;
-        left: number;
-    };
 }
-export const SubCategoryMenu = ({ category, isOpen, position
+export const SubCategoryMenu = ({ category, isOpen,
 }: SubCategoryMenuProps) => {
     if (!isOpen || !category?.subcategories || (category?.subcategories ?? [])?.length === 0) {
         return null;
@@ -18,7 +14,7 @@ export const SubCategoryMenu = ({ category, isOpen, position
 
     const backgroundColor = category.color || "#f4f4f0"; // Default background color if not specified
     return (
-        <div className="fixed z-100" style={{ top: position.top, left: position.left }}>
+        <div className="absolute z-100" style={{ top: "100%", left: 0 }}>
             {/* //Invsisible div to prevent click-through */}
             <div className="h-3 w-60" />
             <div className="w-60 text-black rounded-md overflow-hidden border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -translate-x-[2px] -translate-y-[2px]" style={{ backgroundColor }}>
