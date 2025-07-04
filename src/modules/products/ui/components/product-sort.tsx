@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 export const ProductSort = () => {
     const [filters, setFilters] = useProductFilter();
-console.log(filters.sort);
+
     return (
         <div className="flex items-center gap-2">
             <Button

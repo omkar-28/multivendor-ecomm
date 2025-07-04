@@ -1,13 +1,16 @@
 import { baseProcedure, createTRPCRouter } from "@/trpc/init";
 import type { Sort, Where } from "payload";
 import { z } from "zod";
-import { Category } from "@/payload-types";
+import { Category, Media } from "@/payload-types";
 import { sortValues } from "../search-params";
+import { DEFAULT_CURSOR, DEFAULT_LIMIT } from "@/constant";
 
 export const productsRouter = createTRPCRouter({
     getMany: baseProcedure
         .input(
             z.object({
+                cursor: z.number().default(DEFAULT_CURSOR), // Default cursor for pagination
+                limit: z.number().default(DEFAULT_LIMIT), // Default limit for pagination
                 category: z.string().nullable().optional(), // Optional category filter
                 minPrice: z.string().nullable().optional(), // Optional minimum price filter
                 maxPrice: z.string().nullable().optional(), // Optional maximum price filter
@@ -24,10 +27,6 @@ export const productsRouter = createTRPCRouter({
                 sort = "name"; // Sort by createdAt in descending order
             } else if (input.sort === "oldest") {
                 sort = "createdAt"; // Sort by createdAt in ascending order
-            }
-            // If sort is provided, set the sort order based on the input
-            else if (input.sort === "newest") {
-                sort = "+createdAt"; // Default sort by createdAt in descending order
             }
 
             // If minPrice is provided, filter products by minimum price
@@ -92,8 +91,16 @@ export const productsRouter = createTRPCRouter({
                 depth: 1, // Populate "category", "image"
                 where,
                 sort,
+                page: input.cursor, // Use cursor for pagination
+                limit: input.limit,
             });
 
-            return data
+            return {
+                ...data,
+                docs: data.docs.map((doc) => ({
+                    ...doc,
+                    image: doc.image as Media | null, // Ensure image is typed correctly
+                })),
+            }
         }),
 });
