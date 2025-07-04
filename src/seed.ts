@@ -135,10 +135,56 @@ const categories = [
             { name: "Macro", slug: "macro" },
         ],
     },
+    {
+        name: "Video & Film",
+        color: "#6B5B95",
+        slug: "video-film",
+        subcategories: [
+            { name: "Filmmaking", slug: "filmmaking" },
+            { name: "Video Editing", slug: "video-editing" },
+            { name: "Animation", slug: "animation" },
+            { name: "Documentary", slug: "documentary" },
+        ],
+    },
+    {
+        name: "Cooking & Food",
+        color: "#88B04B",
+        slug: "cooking-food",
+        subcategories: [
+            { name: "Baking", slug: "baking" },
+            { name: "Healthy Cooking", slug: "healthy-cooking" },
+            { name: "Culinary Arts", slug: "culinary-arts" },
+            { name: "Food Photography", slug: "food-photography" },
+        ],
+    }
 ]
 
 const seed = async () => {
     const payload = await getPayload({ config });
+
+    //create admin tenant
+    const adminTenant = await payload.create({
+        collection: "tenants",
+        data: {
+            name: "admin",
+            slug: "admin",
+            stripeAccountId: "admin",
+        },
+    });
+
+    //create admin user
+    await payload.create({
+        collection: "users",
+        data: {
+            email: "admin@test.com",
+            password: "Qwerty",
+            roles: ["super-admin"],
+            username: "admin",
+            tenants: [{
+                tenant: adminTenant.id,
+            }],
+        }
+    });
 
     for (const category of categories) {
         const parentCategory = await payload.create({
