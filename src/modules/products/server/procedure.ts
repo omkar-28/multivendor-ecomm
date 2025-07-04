@@ -6,6 +6,27 @@ import { sortValues } from "../search-params";
 import { DEFAULT_CURSOR, DEFAULT_LIMIT } from "@/constant";
 
 export const productsRouter = createTRPCRouter({
+    getOne: baseProcedure
+        .input(
+            z.object({
+                id: z.string(),
+            })
+        )
+        .query(async ({ ctx, input }) => {
+            // Fetch a single product by ID
+            const data = await ctx.payload.findByID({
+                collection: 'products',
+                id: input.id,
+                depth: 2, // Populate "category", "image" and "tenant"
+            });
+
+            return {
+                ...data,
+                image: data.image as Media | null, // Ensure image is typed correctly
+                coverImage: data.coverImage as Media | null, // Ensure coverImage is typed correctly
+                tenant: data.tenant as Tenant & { image: Media | null }, // Ensure tenant is typed correctly
+            }
+        }),
     getMany: baseProcedure
         .input(
             z.object({
