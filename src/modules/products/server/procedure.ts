@@ -1,7 +1,8 @@
 import { baseProcedure, createTRPCRouter } from "@/trpc/init";
-import type { Where } from "payload";
+import type { Sort, Where } from "payload";
 import { z } from "zod";
 import { Category } from "@/payload-types";
+import { sortValues } from "../search-params";
 
 export const productsRouter = createTRPCRouter({
     getMany: baseProcedure
@@ -10,10 +11,24 @@ export const productsRouter = createTRPCRouter({
                 category: z.string().nullable().optional(), // Optional category filter
                 minPrice: z.string().nullable().optional(), // Optional minimum price filter
                 maxPrice: z.string().nullable().optional(), // Optional maximum price filter
+                tags: z.array(z.string()).nullable().optional(), // Optional tags filter
+                sort: z.enum(sortValues).nullable().optional(), // Sorting option
             })
         )
         .query(async ({ ctx, input }) => {
             const where: Where = {};
+            let sort: Sort = "-createdAt"; // Default sort by createdAt in descending order
+
+            if (input.sort === "newest") {
+                // If sort is provided, set the sort order based on the input
+                sort = "name"; // Sort by createdAt in descending order
+            } else if (input.sort === "oldest") {
+                sort = "createdAt"; // Sort by createdAt in ascending order
+            }
+            // If sort is provided, set the sort order based on the input
+            else if (input.sort === "newest") {
+                sort = "+createdAt"; // Default sort by createdAt in descending order
+            }
 
             // If minPrice is provided, filter products by minimum price
             if (input.minPrice) {
@@ -65,10 +80,18 @@ export const productsRouter = createTRPCRouter({
 
             }
 
+            if (input.tags && input.tags.length > 0) {
+                // If tags are provided, filter products by tags
+                where['tags.name'] = {
+                    in: input.tags,
+                };
+            }
+
             const data = await ctx.payload.find({
                 collection: 'products',
                 depth: 1, // Populate "category", "image"
                 where,
+                sort,
             });
 
             return data
