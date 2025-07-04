@@ -1,7 +1,7 @@
 import { baseProcedure, createTRPCRouter } from "@/trpc/init";
 import type { Sort, Where } from "payload";
 import { z } from "zod";
-import { Category, Media } from "@/payload-types";
+import { Category, Media, Tenant } from "@/payload-types";
 import { sortValues } from "../search-params";
 import { DEFAULT_CURSOR, DEFAULT_LIMIT } from "@/constant";
 
@@ -16,6 +16,7 @@ export const productsRouter = createTRPCRouter({
                 maxPrice: z.string().nullable().optional(), // Optional maximum price filter
                 tags: z.array(z.string()).nullable().optional(), // Optional tags filter
                 sort: z.enum(sortValues).nullable().optional(), // Sorting option
+                tenantSlug: z.string().nullable().optional(), // Optional tenant slug filter
             })
         )
         .query(async ({ ctx, input }) => {
@@ -41,6 +42,13 @@ export const productsRouter = createTRPCRouter({
                 where.price = {
                     ...where.price, // Preserve existing price conditions
                     less_than_equal: (input.maxPrice),
+                };
+            }
+
+            if (input.tenantSlug) {
+                // If tenantSlug is provided, filter products by tenant slug
+                where['tenant.slug'] = {
+                    equals: input.tenantSlug,
                 };
             }
 
@@ -88,7 +96,7 @@ export const productsRouter = createTRPCRouter({
 
             const data = await ctx.payload.find({
                 collection: 'products',
-                depth: 1, // Populate "category", "image"
+                depth: 2, // Populate "category", "image" and "tenant"
                 where,
                 sort,
                 page: input.cursor, // Use cursor for pagination
@@ -100,6 +108,7 @@ export const productsRouter = createTRPCRouter({
                 docs: data.docs.map((doc) => ({
                     ...doc,
                     image: doc.image as Media | null, // Ensure image is typed correctly
+                    tenant: doc.tenant as Tenant & { image: Media | null }, // Ensure tenant is typed correctly
                 })),
             }
         }),
