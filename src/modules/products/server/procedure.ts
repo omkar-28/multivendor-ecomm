@@ -8,12 +8,28 @@ export const productsRouter = createTRPCRouter({
         .input(
             z.object({
                 category: z.string().nullable().optional(), // Optional category filter
-                limit: z.number().default(10), // Default limit for pagination
-                offset: z.number().default(0), // Default offset for pagination
+                minPrice: z.string().nullable().optional(), // Optional minimum price filter
+                maxPrice: z.string().nullable().optional(), // Optional maximum price filter
             })
         )
         .query(async ({ ctx, input }) => {
             const where: Where = {};
+
+            // If minPrice is provided, filter products by minimum price
+            if (input.minPrice) {
+                where.price = {
+                    ...where.price, // Preserve existing price conditions
+                    greater_than_equal: (input.minPrice),
+                };
+            }
+            // If maxPrice is provided, filter products by maximum price
+            if (input.maxPrice) {
+                where.price = {
+                    ...where.price, // Preserve existing price conditions
+                    less_than_equal: (input.maxPrice),
+                };
+            }
+
             if (input.category) {
                 // If category is provided, filter products by category
                 const categoriesData = await ctx.payload.find({
@@ -41,11 +57,12 @@ export const productsRouter = createTRPCRouter({
 
                 if (parentCategory) {
                     subCategoriesSlugs.push(...parentCategory.subcategories.map((subCategory) => subCategory.slug));
+
+                    where["category.slug"] = {
+                        in: [parentCategory.slug, ...subCategoriesSlugs], // Filter products by category slug  
+                    };
                 }
 
-                where["category.slug"] = {
-                    in: [parentCategory.slug, ...subCategoriesSlugs], // Filter products by category slug  
-                };
             }
 
             const data = await ctx.payload.find({
