@@ -1,14 +1,22 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { generateTenantURL } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client"
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { ShoppingCartIcon } from "lucide-react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 
 interface Props {
     slug: string;
 }
+
+const CheckoutButton = dynamic(() => import("@/modules/checkout/ui/components/checkout-button").then(mod => mod.CheckoutButton), {
+    ssr: false,
+    loading: () => <Button disabled className="bg-white border-black"><ShoppingCartIcon className="text-black" /></Button>
+});
 
 export const Navbar = ({ slug }: Props) => {
     const trpc = useTRPC();
@@ -21,6 +29,7 @@ export const Navbar = ({ slug }: Props) => {
                     {data?.image?.url && (<Image src={data?.image?.url} alt={data?.slug} width={32} height={32} className="w-8 h-8 rounded-full border shrink-0 size-[32px]" />)}
                     <span className="text-lg">{data?.name}</span>
                 </Link>
+                <CheckoutButton hideIfEmpty tenantSlug={slug} />
             </div>
         </nav>
     )
@@ -31,8 +40,8 @@ export const NavbarSkeleton = () => {
         <nav className="h-20 border-b font-medium bg-white">
             <div className="max-w-(--breakpoint-xl) mx-auto flex justify-between items-center h-full px-4 lg:px-12">
                 <div className="animate-pulse p-1" />
+                <Button disabled className="bg-white border-black"><ShoppingCartIcon className="text-black" /></Button>
             </div>
         </nav>
-
     )
 }
