@@ -1,8 +1,9 @@
-import { initTRPC } from '@trpc/server';
+import { initTRPC, TRPCError } from '@trpc/server';
 import { getPayload } from 'payload';
 import config from '@payload-config';
 import { cache } from 'react';
 import superjson from 'superjson';
+import { headers } from 'next/headers';
 export const createTRPCContext = cache(async () => {
     /**
      * @see: https://trpc.io/docs/server/context
@@ -27,3 +28,25 @@ export const baseProcedure = t.procedure.use(async ({ next }) => {
 
     return next({ ctx: { payload } });
 });
+
+export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
+    const nextHeaders = await headers();
+    const session = await ctx.payload.auth({ headers: nextHeaders });
+
+    if (!session) {
+        throw new TRPCError({
+            code: 'UNAUTHORIZED',
+            message: 'You must be logged in to perform this action.',
+        });
+    }
+
+    return next({
+        ctx: {
+            ...ctx,
+            session: {
+                ...session,
+                user: session?.user
+            }
+        }
+    });
+})
