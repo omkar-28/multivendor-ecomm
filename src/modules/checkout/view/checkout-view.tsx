@@ -1,28 +1,63 @@
 "use client";
 
 import { useTRPC } from "@/trpc/client";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCart } from "../hooks/use-cart";
 import { toast } from "sonner";
 import { generateTenantURL } from "@/lib/utils";
 import { CheckoutItem, CheckoutItemSkeleton } from "../ui/components/checkout-items";
 import { CheckoutSidebar, CheckoutSidebarSkeleton } from "../ui/components/checkout-sidebar";
 import { InboxIcon } from "lucide-react";
+import { useCheckoutStates } from "../hooks/use-checout-states";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface Props {
     tenantSlug: string;
 }
 
 export const CheckoutView = ({ tenantSlug }: Props) => {
-    const { productIds, clearAllCarts, removeProduct } = useCart(tenantSlug);
+    const router = useRouter();
+    const [states, setStates] = useCheckoutStates();
+    const { productIds, removeProduct, clearCart } = useCart(tenantSlug);
     const trpc = useTRPC();
     const { data, error, isLoading } = useQuery(trpc.checkout.getProducts.queryOptions({
         ids: productIds,
     }));
 
+    const purchaseMutation = useMutation(trpc.checkout.purchase.mutationOptions({
+        onMutate: () => {
+            setStates({ cancel: false, success: false });
+        },
+        onSuccess: (data) => {
+            if (data?.url) {
+                window.location.href = data.url;
+            } else {
+                toast.error("Failed to create checkout session.");
+            }
+        },
+        onError: (error) => {
+            if (error.data?.code === "UNAUTHORIZED") {
+                // TODO: Modify when subdomain auth is implemented 
+                router.push(`/sign-in`);
+            }
+
+            toast.error(`Error: ${error.message}`);
+        },
+    }));
+
+    useEffect(() => {
+        if (states.success) {
+            setStates({ cancel: false, success: false });
+            clearCart();
+            //TODO: Invalidate library cache for products
+            router.push("/products");
+        }
+    }, [states.success, clearCart, router, setStates]);
+
     if (error) {
         if (error.data?.code === "NOT_FOUND") {
-            clearAllCarts();
+            clearCart();
             toast.error("Invalid products found, Cart cleared.");
         }
         return (
@@ -77,9 +112,9 @@ export const CheckoutView = ({ tenantSlug }: Props) => {
                     ) : (
                         <CheckoutSidebar
                             total={data?.totalPrice || 0}
-                            onCheckout={() => { }}
-                            isCanceled={false}
-                            isPending={false}
+                            onPurchase={() => purchaseMutation.mutate({ tenantSlug, productIds })}
+                            isCanceled={states.cancel}
+                            isPending={purchaseMutation.isPending}
                         />)}
 
                 </div>
