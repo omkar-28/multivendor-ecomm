@@ -1,9 +1,15 @@
-import { Progress } from '@/components/ui/progress'
-import React from 'react'
-
-const loading = () => {
+/**
+ * v0 by Vercel.
+ * @see https://v0.dev/t/FIcA6l2Gn2s
+ * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
+ */
+export default function Component() {
     return (
-        <Progress value={33} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
+            <div className="flex flex-col items-center space-y-4">
+                <div className="relative h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                <p className="text-primary">Loading...</p>
+            </div>
+        </div>
     )
 }
-export default loading
