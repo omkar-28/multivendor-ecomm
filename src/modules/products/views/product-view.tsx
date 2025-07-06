@@ -6,12 +6,13 @@ import { Progress } from "@/components/ui/progress";
 import { formatCurrency, generateTenantURL } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { LinkIcon, StarIcon } from "lucide-react";
+import { CheckCheckIcon, LinkIcon, StarIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { CartButtonSkeleton } from "../ui/components/cart-button";
+import { toast } from "sonner";
 
 interface ProductViewProps {
     productId: string;
@@ -24,6 +25,7 @@ const CartButton = dynamic(() => import("../ui/components/cart-button").then(mod
 });
 
 export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
+    const [isCopied, setIsCopied] = useState(false);
     const trpc = useTRPC();
     const { data } = useSuspenseQuery(trpc.products.getOne.queryOptions({
         id: productId,
@@ -70,23 +72,26 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
                             </div>
 
                             <div className="hidden lg:flex px-6 py-4 items-center justify-center">
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-2">
                                     <StarRating
-                                        rating={3}
+                                        rating={data?.reviewRating || 0}
                                         iconClassName="size-4"
                                     />
+                                    <p className="text-base font-medium">
+                                        {data?.reviewCount} ratings
+                                    </p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="block lg:hidden px-6 py-4 items-center justify-center border-b border-black">
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-2">
                                 <StarRating
-                                    rating={3}
+                                    rating={data?.reviewRating || 0}
                                     iconClassName="size-4"
                                 />
                                 <p className="text-base font-medium">
-                                    {5} ratings
+                                    {data?.reviewCount} ratings
                                 </p>
                             </div>
                         </div>
@@ -109,10 +114,22 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
                                     <Button
                                         variant='elevated'
                                         className="size-12 border-black"
-                                        onClick={() => { }}
-                                        disabled={false}
+                                        onClick={() => {
+                                            if (typeof navigator !== "undefined" && navigator.clipboard) {
+                                                navigator.clipboard.writeText(window.location.href);
+                                                setIsCopied(true);
+                                                toast.success("Product link copied to clipboard");
+                                            } else {
+                                                toast.error("Clipboard API not supported");
+                                            }
+
+                                            setTimeout(() => {
+                                                setIsCopied(false);
+                                            }, 2000);
+                                        }}
+                                        disabled={isCopied}
                                     >
-                                        <LinkIcon />
+                                        {isCopied ? <CheckCheckIcon /> : <LinkIcon />}
                                     </Button>
                                 </div>
 
@@ -126,8 +143,8 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
                                     <h3 className="text-xl font-medium">Ratings</h3>
                                     <div className="flex items-center gap-x-1 font-medium">
                                         <StarIcon className="size-4 fill-black" />
-                                        <p>({5})</p>
-                                        <p className="text-base">{5} ratings</p>
+                                        <p>({data?.reviewRating})</p>
+                                        <p className="text-base">{data?.reviewCount} ratings</p>
                                     </div>
                                 </div>
 
@@ -136,10 +153,10 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
                                         <Fragment key={stars}>
                                             <div className="flex items-center gap-2">
                                                 <StarIcon className="size-4 fill-black" />
-                                                <p className="text-sm font-medium">{stars} star</p>
+                                                <p className="text-sm font-medium">{stars} {stars === 1 ? "star" : "stars"}</p>
                                             </div>
-                                            <Progress value={(stars / 5) * 100} className="rounded-full h-2.5 [&_.bg-primary]:bg-pink-400" />
-                                            <p className="text-sm font-medium">({stars * 10})</p>
+                                            <Progress value={data?.ratingDistribution[stars]} className="rounded-full h-2.5 [&_.bg-primary]:bg-pink-400" />
+                                            <p className="text-sm font-medium">{data?.ratingDistribution[stars]}%</p>
                                         </Fragment>
                                     ))}
                                 </div>
