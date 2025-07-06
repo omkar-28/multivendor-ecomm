@@ -49,12 +49,53 @@ export const productsRouter = createTRPCRouter({
                 isPurchased = !!ordersData.docs[0] // Check if the user has purchased the product
             }
 
+            const review = await ctx.payload.find({
+                collection: 'reviews',
+                pagination: false,
+                where: {
+                    product: {
+                        equals: input.id, // Match the product ID
+                    },
+                },
+            });
+
+            const reviewRating = review?.docs.length > 0
+                ? review.docs.reduce((acc, review) => acc + review.rating, 0) / review?.totalDocs : 0; // Calculate average rating
+
+            const ratingDistribution: Record<number, number> = {
+                5: 0,
+                4: 0,
+                3: 0,
+                2: 0,
+                1: 0,
+            };
+
+            // Calculate rating distribution
+            if (review?.totalDocs > 0) {
+                review.docs.forEach((review) => {
+                    const rating = review.rating;
+                    // Ensure rating is between 1 and 5
+                    if (rating >= 1 && rating <= 5) {
+                        ratingDistribution[rating] = (ratingDistribution[rating] || 0) + 1;
+                    }
+                });
+
+                Object.keys(ratingDistribution).forEach((key) => {
+                    const rating = Number(key);
+                    const count = ratingDistribution[rating] || 0;
+                    ratingDistribution[rating] = Math.round((count / review.totalDocs) * 100); // Convert to percentage
+                });
+            }
+
             return {
                 ...data,
                 isPurchased, // Add isPurchased flag to the response
                 image: data.image as Media | null, // Ensure image is typed correctly
                 coverImage: data.coverImage as Media | null, // Ensure coverImage is typed correctly
                 tenant: data.tenant as Tenant & { image: Media | null }, // Ensure tenant is typed correctly
+                reviewRating, // Add average rating to the response
+                reviewCount: review?.totalDocs || 0, // Add review count to the response
+                ratingDistribution
             }
         }),
     getMany: baseProcedure
@@ -154,9 +195,32 @@ export const productsRouter = createTRPCRouter({
                 limit: input.limit,
             });
 
+            const dataWithReviews = await Promise.all(
+                data.docs.map(async (doc) => {
+                    const reviewsData = await ctx.payload.find({
+                        collection: 'reviews',
+                        pagination: false,
+                        where: {
+                            product: {
+                                equals: doc.id, // Match the product ID
+                            },
+                        },
+                    });
+
+                    return {
+                        ...doc,
+                        reviewCount: reviewsData.totalDocs, // Count of reviews for the product
+                        reviewRating:
+                            reviewsData?.docs.length === 0
+                                ? 0
+                                : reviewsData.docs.reduce((acc, review) => acc + review.rating, 0) / reviewsData?.totalDocs, // Average rating
+                    }
+                })
+            )
+
             return {
                 ...data,
-                docs: data.docs.map((doc) => ({
+                docs: dataWithReviews.map((doc) => ({
                     ...doc,
                     image: doc.image as Media | null, // Ensure image is typed correctly
                     tenant: doc.tenant as Tenant & { image: Media | null }, // Ensure tenant is typed correctly
