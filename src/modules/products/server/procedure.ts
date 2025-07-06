@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Category, Media, Tenant } from "@/payload-types";
 import { sortValues } from "../search-params";
 import { DEFAULT_CURSOR, DEFAULT_LIMIT } from "@/constant";
+import { headers as nextHeaders } from "next/headers";
 
 export const productsRouter = createTRPCRouter({
     getOne: baseProcedure
@@ -13,6 +14,9 @@ export const productsRouter = createTRPCRouter({
             })
         )
         .query(async ({ ctx, input }) => {
+            const headers = await nextHeaders();
+            const session = await ctx.payload.auth({ headers });
+            let isPurchased = false;
             // Fetch a single product by ID
             const data = await ctx.payload.findByID({
                 collection: 'products',
@@ -20,8 +24,34 @@ export const productsRouter = createTRPCRouter({
                 depth: 2, // Populate "category", "image" and "tenant"
             });
 
+            if (session && session.user) {
+                // If the user is authenticated, populate the tenant image
+                const ordersData = await ctx.payload.find({
+                    collection: 'orders',
+                    pagination: false,
+                    limit: 1,
+                    where: {
+                        and: [
+                            {
+                                product: {
+                                    equals: input.id, // Match the product ID
+                                }
+                            },
+                            {
+                                user: {
+                                    equals: session.user.id, // Match the authenticated user ID
+                                }
+                            }
+                        ],
+                    },
+                });
+
+                isPurchased = !!ordersData.docs[0] // Check if the user has purchased the product
+            }
+
             return {
                 ...data,
+                isPurchased, // Add isPurchased flag to the response
                 image: data.image as Media | null, // Ensure image is typed correctly
                 coverImage: data.coverImage as Media | null, // Ensure coverImage is typed correctly
                 tenant: data.tenant as Tenant & { image: Media | null }, // Ensure tenant is typed correctly
