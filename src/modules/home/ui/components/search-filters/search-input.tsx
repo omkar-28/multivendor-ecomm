@@ -31,7 +31,7 @@ export const SearchInput = ({
                 <ListFilterIcon />
             </Button>
             {session?.data?.user && (<Button asChild variant='elevated' className="h-11 border-black">
-                <Link href="/library">
+                <Link prefetch href="/library">
                     <BookmarkCheckIcon />
                     Library
                 </Link>
