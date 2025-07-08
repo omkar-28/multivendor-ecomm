@@ -22,6 +22,9 @@ export const productsRouter = createTRPCRouter({
                 collection: 'products',
                 id: input.id,
                 depth: 2, // Populate "category", "image" and "tenant"
+                select: {
+                    content: false, // Exclude content field
+                }
             });
 
             if (session && session.user) {
@@ -193,6 +196,9 @@ export const productsRouter = createTRPCRouter({
                 sort,
                 page: input.cursor, // Use cursor for pagination
                 limit: input.limit,
+                select: {
+                    content: false, // Exclude content field
+                }
             });
 
             const dataWithReviews = await Promise.all(
