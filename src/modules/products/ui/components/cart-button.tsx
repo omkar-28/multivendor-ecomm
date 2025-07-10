@@ -15,6 +15,7 @@ export const CartButton = ({ tenantSlug, productId, isPurchased }: Props) => {
     if (isPurchased) {
         return (
             <Button
+                asChild
                 variant='elevated'
                 className="size-12 flex-1 font-medium border-black bg-white"
             >

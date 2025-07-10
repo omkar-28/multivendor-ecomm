@@ -5,6 +5,7 @@ import { Category, Media, Tenant } from "@/payload-types";
 import { sortValues } from "../search-params";
 import { DEFAULT_CURSOR, DEFAULT_LIMIT } from "@/constant";
 import { headers as nextHeaders } from "next/headers";
+import { TRPCError } from "@trpc/server";
 
 export const productsRouter = createTRPCRouter({
     getOne: baseProcedure
@@ -26,6 +27,13 @@ export const productsRouter = createTRPCRouter({
                     content: false, // Exclude content field
                 }
             });
+
+            if (data?.isArchived) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Product not found or has been archived.',
+                });
+            }
 
             if (session && session.user) {
                 // If the user is authenticated, populate the tenant image
@@ -115,7 +123,11 @@ export const productsRouter = createTRPCRouter({
             })
         )
         .query(async ({ ctx, input }) => {
-            const where: Where = {};
+            const where: Where = {
+                isArchived: {
+                    not_equals: true, // Filter out archived products
+                },
+            };
             let sort: Sort = "-createdAt"; // Default sort by createdAt in descending order
 
             if (input.sort === "newest") {
@@ -144,6 +156,10 @@ export const productsRouter = createTRPCRouter({
                 // If tenantSlug is provided, filter products by tenant slug
                 where['tenant.slug'] = {
                     equals: input.tenantSlug,
+                };
+            } else {
+                where["isPrivate"] = {
+                    not_equals: true, // Filter out private products if tenantSlug is not provided
                 };
             }
 

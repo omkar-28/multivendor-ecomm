@@ -47,7 +47,8 @@ export default buildConfig({
     payloadCloudPlugin(),
     multiTenantPlugin<Config>({
       collections: {
-        products: {}
+        products: {},
+        media: {},
       },
       tenantsArrayField: {
         includeDefaultField: false,

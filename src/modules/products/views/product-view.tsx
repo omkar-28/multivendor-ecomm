@@ -11,6 +11,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { Fragment, useState } from "react";
+import { RichText } from "@payloadcms/richtext-lexical/react"
 import { CartButtonSkeleton } from "../ui/components/cart-button";
 import { toast } from "sonner";
 
@@ -98,7 +99,7 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
 
                         <div className="p-6">
                             {data.description ? (
-                                <p>{data?.description}</p>
+                                <RichText data={data?.description} />
                             ) : (
                                 <p className="font-medium text-muted-foreground italic">No description provided</p>
                             )}
@@ -162,6 +163,27 @@ export const ProductView = ({ productId, tenantSlug }: ProductViewProps) => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export const ProductViewSkeleton = () => {
+    return (
+        <div className="px-4 lg:px-12 py-10">
+            <div className="border border-black rounder-sm bg-white overflow-hidden">
+                <div className="relative aspect-[3.9] border-b border-black bg-gray-200 animate-pulse" />
+                <div className="grid grid-cols-1 lg:grid-cols-6">
+                    <div className="col-span-4 p-6 space-y-4">
+                        <div className="h-8 bg-gray-200 animate-pulse w-1/2" />
+                        <div className="h-6 bg-gray-200 animate-pulse w-full" />
+                        <div className="h-4 bg-gray-200 animate-pulse w-full" />
+                    </div>
+                    <div className="col-span-2 p-6 space-y-4">
+                        <div className="h-8 bg-gray-200 animate-pulse w-full" />
+                        <div className="h-6 bg-gray-200 animate-pulse w-full" />
                     </div>
                 </div>
             </div>
