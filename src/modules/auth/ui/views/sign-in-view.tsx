@@ -42,7 +42,7 @@ export const SignInView = () => {
 
         },
         onSuccess: async () => {
-            toast.success("Registration successful! Redirecting to sign-in page...");
+            toast.success("Log in successful! Redirecting to home page...");
             // Optionally redirect or perform other actions on success
             await queryClient.invalidateQueries(trpc.auth.session.queryFilter());
             toast.dismiss();

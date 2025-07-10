@@ -16,6 +16,7 @@ export const Products: CollectionConfig = {
     },
     admin: {
         useAsTitle: 'name',
+        description :"You must verify your Stripe account before creating products. Products are visible to customers only after purchase.",
     },
     fields: [
         {

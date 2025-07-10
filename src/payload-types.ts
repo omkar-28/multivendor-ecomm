@@ -225,6 +225,8 @@ export interface Category {
   createdAt: string;
 }
 /**
+ * You must verify your Stripe account before creating products. Products are visible to customers only after purchase.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products".
  */
@@ -273,6 +275,10 @@ export interface Order {
    * Checkout session associated with this order. This is used to track the payment status and details.
    */
   stripeCheckoutSessionId: string;
+  /**
+   * Stripe account ID associated with the tenant. This is used for payment processing.
+   */
+  stripeAccountId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -481,6 +487,7 @@ export interface OrdersSelect<T extends boolean = true> {
   user?: T;
   product?: T;
   stripeCheckoutSessionId?: T;
+  stripeAccountId?: T;
   updatedAt?: T;
   createdAt?: T;
 }
