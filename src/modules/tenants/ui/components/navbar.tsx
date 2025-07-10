@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { generateTenantURL } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client"
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { BookmarkCheckIcon, ShoppingCartIcon } from "lucide-react";
+import { ShoppingCartIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,15 +30,7 @@ export const Navbar = ({ slug }: Props) => {
                     <span className="text-lg">{data?.name}</span>
                 </Link>
 
-                <div className="flex items-center gap-3">
-                    <Button asChild variant='elevated' className="h-11 border-black">
-                        <Link prefetch href="library">
-                            <BookmarkCheckIcon />
-                            Library
-                        </Link>
-                    </Button>
-                    <CheckoutButton hideIfEmpty tenantSlug={slug} />
-                </div>
+                <CheckoutButton hideIfEmpty tenantSlug={slug} />
             </div>
         </nav>
     )

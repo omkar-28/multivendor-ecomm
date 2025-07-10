@@ -11,12 +11,11 @@ export const Products: CollectionConfig = {
 
             return Boolean(tenant?.stripeDetailsSubmitted);
         },
-        update: ({ req }) => isSuperAdmin(req?.user),
         delete: ({ req }) => isSuperAdmin(req?.user),
     },
     admin: {
         useAsTitle: 'name',
-        description :"You must verify your Stripe account before creating products. Products are visible to customers only after purchase.",
+        description: "You must verify your Stripe account before creating products. Products are visible to customers only after purchase.",
     },
     fields: [
         {
@@ -26,8 +25,7 @@ export const Products: CollectionConfig = {
         },
         {
             name: "description",
-            // TODO: Change  to richText 
-            type: "text",
+            type: "richText",
         },
         {
             name: "price",
@@ -67,11 +65,28 @@ export const Products: CollectionConfig = {
         },
         {
             name: "content",
-            // TODO: Change  to richText 
-            type: "textarea",
+            type: "richText",
             admin: {
                 description: "Protected content, only visible to the customer after purchase. Add product documentation, download files, getting started guides, and bonus content here. Supports markdown formatting.",
             }
-        }
+        },
+        {
+            name: "isPrivate",
+            label: "Private Product",
+            type: "checkbox",
+            defaultValue: false,
+            admin: {
+                description: "Private products are not visible to customers in the store. They can only be purchased via a direct link.",
+            }
+        },
+        {
+            name: "isArchived",
+            label: "Archive",
+            defaultValue: false,
+            type: "checkbox",
+            admin: {
+                description: "Archive this product to hide it from the store. It will not be visible to customers.",
+            }
+        },
     ]
 }
