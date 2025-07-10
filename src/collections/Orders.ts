@@ -40,5 +40,12 @@ export const Orders: CollectionConfig = {
                 description: "Checkout session associated with this order. This is used to track the payment status and details.",
             },
         },
+        {
+            name: "stripeAccountId",
+            type: "text",
+            admin: {
+                description: "Stripe account ID associated with the tenant. This is used for payment processing.",
+            },
+        }
     ],
 };
